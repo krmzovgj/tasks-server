@@ -2,6 +2,7 @@ import express, { Application, Request, Response } from "express";
 import cors from "cors";
 import notFound from "./middleware/not-found";
 import errorHandler from "./middleware/error-handler";
+import authRoutes from "./routes/auth.route";
 
 const app: Application = express();
 const PORT: number = process.env.PORT ? parseInt(process.env.PORT) : 8080;
@@ -13,15 +14,16 @@ app.use(express.json());
 app.use(cors());
 
 app.get("/", (req: Request, res: Response) => {
-  res.send("Server is running...");
+    res.send("Server is running...");
 });
+
+app.use("/auth", authRoutes);
 
 // Not found & global error handling
 app.use(notFound);
-
 app.use(errorHandler);
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+    console.log(`Server is running on http://localhost:${PORT}`);
 });
