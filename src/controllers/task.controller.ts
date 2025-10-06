@@ -12,25 +12,36 @@ interface GetTasksBody {
 
 interface CreateTaskBody {
     title: string;
+    description: string;
     folderId: number;
     priority?: PrismaTaskPriority;
 }
 
 interface UpdateTaskBody {
     title: string;
+    description: string;
     status: PrismaTaskStatus;
     folderId: number;
     priority?: PrismaTaskPriority;
+    archived: boolean;
 }
 
 // @desc Get all tasks
-// @route GET /task
+// @route GET /task?folderId=1
 
 export const getTasks = async (req: AuthRequest, res: Response) => {
-    const { folderId } = req.body as GetTasksBody;
+    const folderId = parseInt(req.query.folderId as string);
+
+    const archivedQuery = req.query.archived;
+    let whereClause: any = { folderId };
+
+    if (archivedQuery !== undefined) {
+        whereClause.archived = archivedQuery === "true";
+    }
 
     const tasks = await prisma.task.findMany({
-        where: { folderId },
+        where: whereClause,
+        orderBy: { createdAt: "desc" },
     });
 
     res.status(200).json(tasks);
@@ -58,17 +69,20 @@ export const getTaskById = async (req: AuthRequest, res: Response) => {
     res.status(200).json(task);
 };
 
+
 // @desc Create task
 // @route POST /task
 
 export const createTask = async (req: AuthRequest, res: Response) => {
-    const { title, folderId, priority } = req.body as CreateTaskBody;
+    const { title, description, priority, folderId } =
+        req.body as CreateTaskBody;
 
     const task = await prisma.task.create({
         data: {
             title,
-            folderId,
+            description,
             priority,
+            folderId,
         },
     });
 
@@ -81,11 +95,12 @@ export const createTask = async (req: AuthRequest, res: Response) => {
 export const updateTask = async (req: AuthRequest, res: Response) => {
     const taskId = parseInt(req.params.id);
 
-    const { title, status, priority, folderId } = req.body as UpdateTaskBody;
+    const { title, description, status, priority, folderId, archived } =
+        req.body as UpdateTaskBody;
 
     const updated = await prisma.task.updateMany({
         where: { id: taskId, folderId },
-        data: { title, status, priority },
+        data: { title, description, status, priority, archived },
     });
 
     if (updated.count === 0) {

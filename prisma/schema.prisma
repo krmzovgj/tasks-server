@@ -33,13 +33,15 @@ model Folder {
 }
 
 model Task {
-  id        Int          @id @default(autoincrement())
-  title     String
-  status    TaskStatus   @default(PENDING)
-  priority  TaskPriority @default(MEDIUM)
-  folderId  Int
-  folder    Folder       @relation(fields: [folderId], references: [id])
-  createdAt DateTime     @default(now())
+  id          Int          @id @default(autoincrement())
+  title       String
+  description String?
+  status      TaskStatus   @default(PENDING)
+  priority    TaskPriority @default(MEDIUM)
+  archived    Boolean      @default(false)
+  folderId    Int
+  folder      Folder       @relation(fields: [folderId], references: [id])
+  createdAt   DateTime     @default(now())
 }
 
 enum TaskStatus {
