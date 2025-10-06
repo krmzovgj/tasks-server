@@ -3,6 +3,8 @@ import cors from "cors";
 import notFound from "./middleware/not-found";
 import errorHandler from "./middleware/error-handler";
 import authRoutes from "./routes/auth.route";
+import taskRoutes from './routes/task.route'
+import folderRoutes from './routes/folder.route'
 
 const app: Application = express();
 const PORT: number = process.env.PORT ? parseInt(process.env.PORT) : 8080;
@@ -18,6 +20,8 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 app.use("/auth", authRoutes);
+app.use('/task', taskRoutes)
+app.use('/folder', folderRoutes)
 
 // Not found & global error handling
 app.use(notFound);
