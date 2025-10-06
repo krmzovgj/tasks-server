@@ -69,7 +69,6 @@ export const getTaskById = async (req: AuthRequest, res: Response) => {
     res.status(200).json(task);
 };
 
-
 // @desc Create task
 // @route POST /task
 
