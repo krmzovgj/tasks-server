@@ -27,7 +27,7 @@ interface UpdateTaskBody {
 }
 
 // @desc Get all tasks
-// @route GET /task?folderId=1
+// @route GET /task?folderId=2
 
 export const getTasks = async (req: AuthRequest, res: Response) => {
     const folderId = parseInt(req.query.folderId as string);
