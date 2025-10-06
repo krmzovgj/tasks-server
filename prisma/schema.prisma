@@ -15,6 +15,7 @@ datasource db {
 
 model User {
   id        Int      @id @default(autoincrement())
+  username  String   @default("User")
   email     String   @unique
   password  String
   folders   Folder[]
@@ -24,7 +25,7 @@ model User {
 model Folder {
   id        Int      @id @default(autoincrement())
   name      String
-  color     String @default("#FF8C00")
+  color     String   @default("#FF8C00")
   userId    Int
   user      User     @relation(fields: [userId], references: [id])
   task      Task[]

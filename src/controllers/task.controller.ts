@@ -6,6 +6,10 @@ import {
     TaskStatus as PrismaTaskStatus,
 } from "@prisma/client";
 
+interface GetTasksBody {
+    folderId: number;
+}
+
 interface CreateTaskBody {
     title: string;
     folderId: number;
@@ -23,8 +27,10 @@ interface UpdateTaskBody {
 // @route GET /task
 
 export const getTasks = async (req: AuthRequest, res: Response) => {
+    const { folderId } = req.body as GetTasksBody;
+
     const tasks = await prisma.task.findMany({
-        where: { folderId: req.folderId },
+        where: { folderId },
     });
 
     res.status(200).json(tasks);
@@ -35,13 +41,14 @@ export const getTasks = async (req: AuthRequest, res: Response) => {
 
 export const getTaskById = async (req: AuthRequest, res: Response) => {
     const taskId = parseInt(req.params.id);
+    const { folderId } = req.body as GetTasksBody;
 
     if (!taskId) {
         return res.status(400).json({ message: "Task id must be provided" });
     }
 
     const task = await prisma.task.findUnique({
-        where: { id: taskId, folderId: req.folderId },
+        where: { id: taskId, folderId },
     });
 
     if (!task) {
@@ -93,13 +100,14 @@ export const updateTask = async (req: AuthRequest, res: Response) => {
 
 export const deleteTask = async (req: AuthRequest, res: Response) => {
     const taskId = parseInt(req.params.id);
+    const { folderId } = req.body as GetTasksBody;
 
     if (!taskId) {
         return res.status(400).json({ message: "Task id must be provided" });
     }
 
     const deleted = await prisma.task.deleteMany({
-        where: { id: taskId, folderId: req?.folderId },
+        where: { id: taskId, folderId },
     });
 
     if (deleted.count === 0) {

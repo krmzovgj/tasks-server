@@ -3,8 +3,8 @@ import { AuthRequest } from "../middleware/auth";
 import prisma from "../prisma";
 
 interface FolderBody {
-    name: string
-    color?: string
+    name: string;
+    color?: string;
 }
 
 // @desc Get Folders
@@ -91,12 +91,12 @@ export const deleteFolder = async (req: AuthRequest, res: Response) => {
     }
 
     const deleted = await prisma.folder.deleteMany({
-        where: {id: folderId, userId: req.user?.id}
-    })
+        where: { id: folderId, userId: req.user?.id },
+    });
 
-    if(deleted.count === 0) {
-        return res.status(400).json({message: "Folder not found"})
+    if (deleted.count === 0) {
+        return res.status(400).json({ message: "Folder not found" });
     }
-    
-    res.json({message: "Folder deleted"})
+
+    res.json({ message: "Folder deleted" });
 };

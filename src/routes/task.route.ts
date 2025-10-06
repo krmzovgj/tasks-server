@@ -14,6 +14,6 @@ router.get("/", verifyToken, getTasks);
 router.get("/:id", verifyToken, getTaskById);
 router.post("/", verifyToken, createTask);
 router.put("/:id", verifyToken, updateTask);
-router.delete("/:id", verifyToken, deleteTask)
+router.delete("/:id", verifyToken, deleteTask);
 
 export default router;
