@@ -27,7 +27,7 @@ interface UpdateTaskBody {
 }
 
 // @desc Get all tasks
-// @route GET /task?folderId=2
+// @route GET /task?folderId=2?archive=true
 
 export const getTasks = async (req: AuthRequest, res: Response) => {
     const folderId = parseInt(req.query.folderId as string);
@@ -76,12 +76,20 @@ export const createTask = async (req: AuthRequest, res: Response) => {
     const { title, description, priority, folderId } =
         req.body as CreateTaskBody;
 
+    const folder = await prisma.folder.findUnique({
+        where: { id: Number(folderId) },
+    });
+
+    if (!folder) {
+        return res.status(400).json({ message: "Folder does not exist" });
+    }
+
     const task = await prisma.task.create({
         data: {
             title,
             description,
             priority,
-            folderId,
+            folderId: Number(folderId),
         },
     });
 
