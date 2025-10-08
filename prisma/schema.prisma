@@ -1,41 +1,53 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+// prisma/schema.prisma
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = "postgres://fa1d0ac4b4035cb0c4657243203ba317fefbf7af58d780102ab10ea879e28a51:sk_e85KILdcM2WsvDSYK7Wnk@db.prisma.io:5432/postgres?sslmode=require"
+
+  // Serverless/runtime traffic -> Prisma Accelerate (your pooled URL)
+  url = env("BACKEND_PRISMA_DATABASE_URL")
+
+  // Migrations/seed -> direct Postgres URL (no pooler)
+  directUrl = env("BACKEND_POSTGRES_URL")
 }
 
 model User {
   id        Int      @id @default(autoincrement())
+  username  String   @default("User")
   email     String   @unique
   password  String
-  createdAt DateTime @default(now())
-  username  String   @default("User")
   folders   Folder[]
+  createdAt DateTime @default(now())
 }
 
 model Folder {
   id        Int      @id @default(autoincrement())
   name      String
-  userId    Int
-  createdAt DateTime @default(now())
   color     String   @default("#FF8C00")
+  userId    Int
   user      User     @relation(fields: [userId], references: [id])
   task      Task[]
+  createdAt DateTime @default(now())
 }
 
 model Task {
   id          Int          @id @default(autoincrement())
   title       String
+  description String?
   status      TaskStatus   @default(PENDING)
-  createdAt   DateTime     @default(now())
-  folderId    Int
   priority    TaskPriority @default(MEDIUM)
   archived    Boolean      @default(false)
-  description String?
+  folderId    Int
   folder      Folder       @relation(fields: [folderId], references: [id])
+  createdAt   DateTime     @default(now())
 }
 
 enum TaskStatus {
