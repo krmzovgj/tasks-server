@@ -85,13 +85,14 @@ export const updateFolder = async (req: AuthRequest, res: Response) => {
 
 export const deleteFolder = async (req: AuthRequest, res: Response) => {
     const folderId = parseInt(req.params.id);
+    const userId = parseInt(req.query.userId as string);
 
     if (!folderId) {
         return res.status(400).json({ message: "Folder id must be provided" });
     }
 
     const deleted = await prisma.folder.deleteMany({
-        where: { id: folderId, userId: req.user?.id },
+        where: { id: folderId, userId },
     });
 
     if (deleted.count === 0) {

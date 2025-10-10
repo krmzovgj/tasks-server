@@ -1,5 +1,4 @@
-import express, { Router } from "express";
-import { verifyToken } from "../middleware/auth";
+import express from "express";
 import {
     createFolder,
     deleteFolder,
@@ -7,6 +6,7 @@ import {
     getFolders,
     updateFolder,
 } from "../controllers/folder.controller";
+import { verifyToken } from "../middleware/auth";
 
 const router = express.Router();
 

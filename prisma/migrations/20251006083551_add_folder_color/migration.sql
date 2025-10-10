@@ -1,2 +1,0 @@
--- AlterTable
-ALTER TABLE "Folder" ADD COLUMN     "color" TEXT NOT NULL DEFAULT '#FF8C00';

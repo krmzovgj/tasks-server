@@ -26,6 +26,7 @@ model User {
   password  String
   folders   Folder[]
   createdAt DateTime @default(now())
+  Task      Task[]
 }
 
 model Folder {
@@ -45,9 +46,14 @@ model Task {
   status      TaskStatus   @default(PENDING)
   priority    TaskPriority @default(MEDIUM)
   archived    Boolean      @default(false)
-  folderId    Int
-  folder      Folder       @relation(fields: [folderId], references: [id])
-  createdAt   DateTime     @default(now())
+
+  folderId Int?
+  folder   Folder? @relation(fields: [folderId], references: [id], onDelete: Cascade)
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
 }
 
 enum TaskStatus {

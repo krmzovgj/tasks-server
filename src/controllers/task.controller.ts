@@ -7,13 +7,15 @@ import {
 } from "@prisma/client";
 
 interface GetTasksBody {
-    folderId: number;
+    folderId?: number | null;
+    userId: number;
 }
 
 interface CreateTaskBody {
     title: string;
     description: string;
-    folderId: number;
+    folderId?: number | null;
+    userId: number;
     priority?: PrismaTaskPriority;
 }
 
@@ -21,7 +23,8 @@ interface UpdateTaskBody {
     title: string;
     description: string;
     status: PrismaTaskStatus;
-    folderId: number;
+    folderId?: number | null;
+    userId: number;
     priority?: PrismaTaskPriority;
     archived: boolean;
 }
@@ -31,16 +34,13 @@ interface UpdateTaskBody {
 
 export const getTasks = async (req: AuthRequest, res: Response) => {
     const folderId = parseInt(req.query.folderId as string);
+    const userId = parseInt(req.query.userId as string);
+    const archived = req.query.archived;
 
-    const archivedQuery = req.query.archived;
-    let whereClause: any = { folderId };
-
-    if (archivedQuery !== undefined) {
-        whereClause.archived = archivedQuery === "true";
-    }
+    const archivedBool = archived === "true";
 
     const tasks = await prisma.task.findMany({
-        where: whereClause,
+        where: { userId: userId, folderId: folderId, archived: archivedBool },
         orderBy: { createdAt: "desc" },
     });
 
@@ -52,17 +52,19 @@ export const getTasks = async (req: AuthRequest, res: Response) => {
 
 export const getTaskById = async (req: AuthRequest, res: Response) => {
     const taskId = parseInt(req.params.id);
-    const { folderId } = req.body as GetTasksBody;
+    const userId = Number(req.query.userId);
 
     if (!taskId) {
         return res.status(400).json({ message: "Task id must be provided" });
     }
 
     const task = await prisma.task.findUnique({
-        where: { id: taskId, folderId },
+        where: {
+            id: taskId,
+        },
     });
 
-    if (!task) {
+    if (!task || task?.userId !== userId) {
         return res.status(404).json({ message: "Task not found" });
     }
 
@@ -73,15 +75,21 @@ export const getTaskById = async (req: AuthRequest, res: Response) => {
 // @route POST /task
 
 export const createTask = async (req: AuthRequest, res: Response) => {
-    const { title, description, priority, folderId } =
+    const { title, description, priority, folderId, userId } =
         req.body as CreateTaskBody;
 
-    const folder = await prisma.folder.findUnique({
-        where: { id: Number(folderId) },
-    });
+    if (!userId) {
+        return res.status(400).json({ message: "User id must be provided" });
+    }
 
-    if (!folder) {
-        return res.status(400).json({ message: "Folder does not exist" });
+    if (folderId !== undefined && folderId !== null) {
+        const folder = await prisma.folder.findUnique({
+            where: { id: Number(folderId) },
+        });
+
+        if (!folder) {
+            return res.status(400).json({ message: "Folder does not exist" });
+        }
     }
 
     const task = await prisma.task.create({
@@ -89,7 +97,8 @@ export const createTask = async (req: AuthRequest, res: Response) => {
             title,
             description,
             priority,
-            folderId: Number(folderId),
+            userId: Number(userId),
+            folderId: req.body.folderId !== null ? Number(folderId) : null,
         },
     });
 
@@ -102,11 +111,21 @@ export const createTask = async (req: AuthRequest, res: Response) => {
 export const updateTask = async (req: AuthRequest, res: Response) => {
     const taskId = parseInt(req.params.id);
 
-    const { title, description, status, priority, folderId, archived } =
-        req.body as UpdateTaskBody;
+    const body = req.body as UpdateTaskBody;
+    const { title, description, status, priority, userId, folderId, archived } =
+        body;
+
+    const where: any = {
+        id: taskId,
+        userId,
+    };
+
+    if (folderId !== null && folderId !== undefined) {
+        where.folderId = Number(folderId);
+    }
 
     const updated = await prisma.task.updateMany({
-        where: { id: taskId, folderId },
+        where,
         data: { title, description, status, priority, archived },
     });
 
